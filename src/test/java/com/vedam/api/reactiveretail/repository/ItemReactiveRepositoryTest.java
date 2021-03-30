@@ -40,7 +40,7 @@ public class ItemReactiveRepositoryTest {
     public void getAllItems() {
         StepVerifier.create(itemReactiveRepository.findAll())
                 .expectSubscription()
-                .expectNextCount(4)
+                .expectNextCount(5)
                 .verifyComplete();
 
     }
