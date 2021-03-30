@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active: dev
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  data:
+    mongodb:
+      uri: mongodb+srv://dbUser:dbPass@cluster0.1xejm.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
