@@ -8,7 +8,6 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,7 +17,7 @@ public class ItemReactiveRepositoryTest {
     @Autowired
     ItemReactiveRepository itemReactiveRepository;
 
-    private List<Item> items = Arrays.asList(new Item(null, "Levi's", "501 Original", 35d),
+    private final List<Item> items = Arrays.asList(new Item(null, "Levi's", "501 Original", 35d),
             new Item(null, "Levi's", "514 Straight", 40d),
             new Item(null, "Levi's", "Western Fit", 45d),
             new Item(null, "Levi's", "502 Taper", 55d),
@@ -29,9 +28,7 @@ public class ItemReactiveRepositoryTest {
         itemReactiveRepository.deleteAll()
                 .thenMany(Flux.fromIterable(items))
                 .flatMap(itemReactiveRepository::save)
-                .doOnNext(item -> {
-                    System.out.println("inserted item is " + item);
-                })
+                .doOnNext(item -> System.out.println("inserted item is " + item))
                 .blockLast();
         
     }
