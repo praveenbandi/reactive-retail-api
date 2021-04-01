@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Arrays;
@@ -50,4 +51,48 @@ public class ItemReactiveRepositoryTest {
                 .verifyComplete();
     }
 
+
+    @Test
+    void findByBrand() {
+        StepVerifier.create(itemReactiveRepository.findByBrand("Levi's"))
+                .expectSubscription()
+                .expectNextCount(5)
+                .verifyComplete();
+    }
+
+    @Test
+    void saveItem() {
+        Item item = new Item(null, "Diesel", "Slim Jeans", 275d);
+        Mono<Item> savedItem = itemReactiveRepository.save(item);
+        StepVerifier.create(savedItem.log("Saved Item: "))
+                .expectSubscription()
+                .expectNextMatches(item1 -> item1.getId() !=null && item1.getBrand().equals("Diesel"))
+                .verifyComplete();
+    }
+
+    @Test
+    void updateItem() {
+        Mono<Item> updatedItem = itemReactiveRepository.findById("XYZ123")
+                .map(item1 -> {
+                    item1.setPrice(100d);
+                    return item1;
+                })
+                .flatMap(itemReactiveRepository::save);
+
+        StepVerifier.create(updatedItem.log("Updated Item: "))
+                .expectSubscription()
+                .expectNextMatches(item -> item.getPrice().equals(100d))
+                .verifyComplete();
+    }
+
+    @Test
+    void deleteItem() {
+        Flux<Void> deletedItem = itemReactiveRepository.findByBrand("Diesel")
+                .map(Item::getId)
+                .flatMap(id -> itemReactiveRepository.deleteById(id));
+
+        StepVerifier.create(deletedItem.log("deleted item:"))
+                .expectSubscription()
+                .verifyComplete();
+    }
 }
