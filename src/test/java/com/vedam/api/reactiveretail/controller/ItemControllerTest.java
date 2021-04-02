@@ -11,6 +11,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Arrays;
@@ -82,5 +83,64 @@ class ItemControllerTest {
                 .expectSubscription()
                 .expectNextCount(5)
                 .verifyComplete();
+    }
+
+    @Test
+    void getItemById() {
+         webTestClient.get()
+                .uri(ITEM_ENDPOINT_V1.concat("/{id}"), "XYZ123" )
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.price", 50d);
+
+    }
+
+    @Test
+    void getItemById_returnsNotFound() {
+        webTestClient.get()
+                .uri(ITEM_ENDPOINT_V1.concat("/{id}"), "XYZ123ABC" )
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    void createItem() {
+        webTestClient.post().uri(ITEM_ENDPOINT_V1)
+                .body(Mono.just(new Item(null, "Diesel", "Slim Jeans", 275d)), Item.class)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").isNotEmpty()
+                .jsonPath("$.brand").isEqualTo("Diesel")
+                .jsonPath("$.style").isEqualTo("Slim Jeans")
+                .jsonPath("$.price").isEqualTo(275d);
+
+    }
+
+    @Test
+    void deleteItem() {
+        webTestClient.delete().uri(ITEM_ENDPOINT_V1.concat("/{id}"), "XYZ123")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Void.class);
+    }
+
+    @Test
+    void updateItem_returnsOK() {
+        webTestClient.put().uri(ITEM_ENDPOINT_V1.concat("/{id}"), "XYZ123")
+                .body(Mono.just(new Item(null, "Levi's", "527 Slim BootCut", 100d)), Item.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.price").isEqualTo(100d);
+    }
+
+    @Test
+    void updateItem_returnsNOTFOUND() {
+        webTestClient.put().uri(ITEM_ENDPOINT_V1.concat("/{id}"), "XYZasd123")
+                .body(Mono.just(new Item(null, "Levi's", "527 Slim BootCut", 100d)), Item.class)
+                .exchange()
+                .expectStatus().isNotFound();
     }
 }
