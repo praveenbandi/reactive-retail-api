@@ -143,4 +143,13 @@ class ItemControllerTest {
                 .exchange()
                 .expectStatus().isNotFound();
     }
+
+    @Test
+    void runtimeException(){
+        webTestClient.get().uri(ITEM_ENDPOINT_V1+"/runtime")
+                .exchange()
+                .expectStatus().is5xxServerError()
+                .expectBody(String.class)
+                .isEqualTo("Runtime Exception Yo");
+    }
 }
